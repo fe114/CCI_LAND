@@ -56,6 +56,8 @@ import fnmatch
 import matplotlib.pyplot as plt 
 import itertools
 from operator import itemgetter 
+from scipy import stats
+from itertools import repeat 
 
 
 #Paths;
@@ -100,7 +102,8 @@ for item in list_of_paths:
 sortedtimes = np.argsort(list_of_times) #sorting list_of_times numerically
 sortedpath = [list_of_paths[i] for i in sortedtimes] #ordering list_of_paths using corresponding sortedtimes array. 
 x = [list_of_times[i] for i in sortedtimes]
-
+X = np.array(x)
+print X
 print 'paths', len(list_of_paths)
 
 
@@ -204,7 +207,7 @@ anomfinal = []
 for i in range(len(AOD_values)):
     anom2 = AOD_values[i] - Averages[int(months_ordered[i])-1]
     anomfinal.append(anom2)
-
+Y = np.array(anomfinal)
 #plotting AOD monthly average
 xticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] # my x ticks 
 month = linspace(1,12,12) # list from 1 to 12 
@@ -222,7 +225,16 @@ plt.savefig( figpath + 'monthly_AOD_mean_plot.pdf')
 plt.title('AOD anomalies 2002-2012')
 plt.xlabel('Month')
 plt.ylabel('AOD anomaly')
-plt.plot(x, anomfinal, marker = 'o', color = 'green',
+plt.plot(x, anomfinal, marker = 'o', color = 'black',
         markerfacecolor='blue', markersize=6)    
+
+#calculate linear least squares fit 
+A = np.vstack([X, np.ones(len(X))]).T
+m, c = np.linalg.lstsq(A, Y)[0]
+print (m,c)
+bestfittxt =  '{:.5f}x {:.5f}'.format(m, c)
+#plot line and label inc. equation
+plt.plot(X, m*X + c, 'r', label= 'Fitted line '+ bestfittxt)
+plt.legend()
 plt.show()
 plt.savefig( figpath + 'AOD_anomalies.pdf')
