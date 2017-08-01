@@ -33,6 +33,8 @@ Time series plot
 AUTHOR;
 Freya Espir
 """
+import json
+import pandas as pd
 from numpy import * 
 from math import *
 import os,sys
@@ -50,7 +52,7 @@ from itertools import repeat
 from scipy.stats import t 
 from atsr import *
 from file_search import *
-
+from geolocation import *
 
 #Paths;
 figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/'
@@ -66,9 +68,11 @@ if not os.path.isfile(aerfile):
     #that outputs a structure containing all file times.
     aerosol_files = fetch_aerosol_file_attributes(extract_files(path,"04.01.nc")  )
     # Writing JSON data
+    print aerosol_files
+    #sys.exit()
     with open(aerfile, 'w') as f:
         json.dump(aerosol_files, f)
-
+#sys.exit()
 # Reading data back
 with open(aerfile, 'r') as f:
     aerosol_files = json.load(f)
@@ -78,33 +82,64 @@ with open(aerfile, 'r') as f:
     list_of_files  = aerosol_files['file']
 
 
-print list_of_files
+
 
 #sys.exit('stop')
 sortedtimes = np.argsort(list_of_times) #sorting list_of_times numerically
-sortedpath = [list_of_paths[i] for i in sortedtimes] #ordering list_of_paths using corresponding sortedtimes array. 
+sortedpath = [list_of_files[i] for i in sortedtimes] #ordering list_of_paths using corresponding sortedtimes array. 
 
 #print sortedpath
 
+file_AOD_lon_lat = outpath + 'aodlonlat.txt'
+print file_AOD_lon_lat
 
-AODs = [] # empty list where AOD's at -63.5 lon, -11.5 lat for each .nc file will be written to.
-# Extract info from .nc file
-nan = [] 
-counting = 0
-for item in sortedpath:
-    readfile = Dataset(item,mode='r') #read data 
-    lons = readfile.variables['longitude'][:] 
-    lats = readfile.variables['latitude'][:]
-    mean_AOD_values = readfile.variables['AOD550_mean'][:,:]
-    coordlon = np.where(lons == -63.5) # locate where in list of lons where value == -63.5 
-    coordlat = np.where(lats == -11.5)
-    AOD_at_point = mean_AOD_values[coordlat,coordlon]
-    for i in AOD_at_point: #finding AOD values == nan
-        if i < 0.01:
-            nan.append(counting)#writing the indexes to a list 
-    AOD_at_point = float(AOD_at_point) 
-    AODs.append(AOD_at_point)
-    counting = counting + 1
+#if os.path.isfile(file_AOD_lon_lat):
+    #gettingdata = getdata(item,'longitude', 'latitude', 'AOD550_mean',-63.5,-11.5)
+    #print gettingdata['AATSR_READING']
+    #sys.exit()
+    #listofaods.append(gettingdata)#['AATSR_READING'])
+    #json2pd = pd.Series(gettingdata).to_json(orient='values')
+    #with open(file_AOD_lon_lat, 'w') as f:
+    # json.dump(json2pd,f) 
+    #listofaods = []
+    #aerosol_readings = json.load(opening)
+    #data_reading = aerosol_readings['AATSR_READING']
+
+if not os.path.isfile(file_AOD_lon_lat):
+  
+    AODs = [] 
+    nan = [] 
+    counting = 0
+    for item in sortedpath:
+        readfile = Dataset(item,mode='r')
+        lons = readfile.variables['longitude'][:] 
+        lats = readfile.variables['latitude'][:]
+        mean_AOD_values = readfile.variables['AOD550_mean'][:,:]
+        coordlon = np.where(lons == -63.5) # locate where in list of lons where value == -63.5 
+        coordlat = np.where(lats == -11.5)
+        AOD_at_point = mean_AOD_values[coordlat,coordlon]
+        print AOD_at_point   
+        #np.where(data_reading < 0.01):  
+        for i in AOD_at_point: #finding AOD values == nan
+            if i < 0.01:
+                nan.append(counting)#writing the indexes to a list 
+        AOD_at_point = float(AOD_at_point) 
+        AODs.append(AOD_at_point)
+        counting = counting + 1
+    with open(file_AOD_lon_lat, 'w') as writing:
+        for value in AODs:       
+            writing.write("%s\n" % value )
+      
+with open(file_AOD_lon_lat) as reading:
+    content = reading.readlines()
+    print content
+    
+#reading = open(file_AOD_lon_lat.txt, 'r')
+#print reading
+sys.exit()
+
+#print AODs
+
 
 ordered_times = [list_of_times[i] for i in sortedtimes]#odering list_of_times numericaly  
 #removing the nan values from the list of times and list of AODs
