@@ -49,60 +49,49 @@ from scipy import stats
 from itertools import repeat
 from scipy.stats import t 
 from atsr import *
-from geolocation import getdata
+from file_search import *
+
 
 #Paths;
 figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/'
-filepath = "/group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v04-01/L3_MONTHLY"
-outpath = "/home/users/fespir/Backup/CCI_LAND/pathinfo/"
-#locate .nc files
-list_of_paths = [] # empty list to write files ending in .nc to 
+path = "/group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v04-01/L3_MONTHLY/"
+outpath = "/group_workspaces/cems2/nceo_generic/CCI_LAND/output_data"
+
+#Check if save file containing these files already exists
+aerfile = outpath+'aodfiles.json'
 
 
-for root, dirs, files in os.walk(filepath): # locating files in the L3_Monthly directory ending in .nc 
-    for file in files:
-        if file.endswith("_seg.nc"):
-            continue
-        else:
-            if file.endswith(".nc"):
-                file_path = (os.path.join(root, file)) #gives the full root to the file path. e.g. /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v04-01/L3_MONTHLY/2008/200805-ESACCI-L3C_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC-MONTHLY-fv04.01.nc
-                list_of_paths.append(file_path) # writes each full file path to the empty list defined above
+if not os.path.isfile(aerfile):
+    #All files are located in extract_files that are inputs to fetch_aerosol_file_attributes
+    #that outputs a structure containing all file times.
+    aerosol_files = fetch_aerosol_file_attributes(extract_files(path,"04.01.nc")  )
+    # Writing JSON data
+    with open(aerfile, 'w') as f:
+        json.dump(aerosol_files, f)
 
-#extracting the year and month from each file path name. E.g. 200805 2008 = year, 05 = month.          
-list_of_times = []
-list_of_months = [] 
-list_of_years = []
-list_of_files = []
-
-#print atsr.aerosol_file_info(list_of_paths)
-
-
-for item in list_of_paths:
-    output = aerosol_file_info(item)
-    print output
-    list_of_months.append(output['MONTH'])
-    list_of_years.append(output['YEAR'])
-    list_of_files.append(output['filename'])
-    ts = output['YEAR'] + (output['MONTH']-0.5)/12. #centre of the month
-    list_of_times.append(ts)# writing each time to a new list
+# Reading data back
+with open(aerfile, 'r') as f:
+    aerosol_files = json.load(f)
+    list_of_times  = aerosol_files['time']
+    list_of_months = aerosol_files['month']
+    list_of_years  = aerosol_files['year']
+    list_of_files  = aerosol_files['file']
 
 
+print list_of_files
+
+#sys.exit('stop')
 sortedtimes = np.argsort(list_of_times) #sorting list_of_times numerically
 sortedpath = [list_of_paths[i] for i in sortedtimes] #ordering list_of_paths using corresponding sortedtimes array. 
 
+#print sortedpath
 
 
 AODs = [] # empty list where AOD's at -63.5 lon, -11.5 lat for each .nc file will be written to.
-count1 = 0
-
 # Extract info from .nc file
 nan = [] 
 counting = 0
 for item in sortedpath:
-    #print item
-    values = getdata(item)
-    print values 
-    '''
     readfile = Dataset(item,mode='r') #read data 
     lons = readfile.variables['longitude'][:] 
     lats = readfile.variables['latitude'][:]
@@ -116,7 +105,7 @@ for item in sortedpath:
     AOD_at_point = float(AOD_at_point) 
     AODs.append(AOD_at_point)
     counting = counting + 1
-'''
+
 ordered_times = [list_of_times[i] for i in sortedtimes]#odering list_of_times numericaly  
 #removing the nan values from the list of times and list of AODs
 x = [i for j, i in enumerate(ordered_times) if j not in nan]
@@ -134,6 +123,9 @@ plt.savefig( figpath + 'monthly_AOD_2002_2012.pdf')
 
 AOD_values = np.array(y) #converting AODs to an array for the def function below
 X = np.array(x)
+
+print X
+#sys.exit("exiting")
 #Monthly AOD average
 Jan = []
 Feb = []
@@ -227,7 +219,8 @@ plt.xticks(month,xticks)
 plt.plot(month,monthly_retrievals, 'o')
 plt.title('Monthly Retrievals')
 plt.show()
-#sys.exit("End")
+
+
 #plotting monthly AOD mean
 plt.xticks(month, xticks)
 plt.plot(month, Averages, 'o-')
@@ -240,24 +233,18 @@ plt.savefig( figpath + 'monthly_AOD_mean_plot.pdf')
 #plotting AOD anomalies
 
 
-#plt.title('AOD anomalies 2002-2012')
-#plt.xlabel('Year')
-#plt.ylabel('AOD anomaly')
-#A = np.vstack([X, np.ones(len(X))]).T
-#m, c = np.linalg.lstsq(A, Y)[0]
-#print m, c 
-#bestfittxt =  '{:.5f}x + {:.10f}'.format(m, c)
-#plt.plot(X, Y, 'o', label='Original data', markersize=5) 
-#plt.plot(X, m*X + c, 'r', label='Fitted line ' + bestfittxt)
+plt.title('AOD anomalies 2002-2012')
+plt.xlabel('Year')
+plt.ylabel('AOD anomaly')
+A = np.vstack([X, np.ones(len(X))]).T
+m, c = np.linalg.lstsq(A, Y)[0]
+y_x0= m*X[0] + c
+bestfittxt =  '{:.5f}x + {:.10f}'.format(m, y_x0)
+plt.plot(X, Y, 'o', label='Original data', markersize=5) 
+plt.plot(X, m*X + c, 'r', label='Fitted line ' + bestfittxt)
+#intercept at X[0]:
 
-xs = np.array([1,5,6,7])
-ys = np.array([1,4,6,6])
-print xs,ys
-As = np.vstack([xs, np.ones(len(xs))]).T
-grad, inter = np.linalg.lstsq(As, ys)[0]
-plt.plot(xs, ys, 'o', label='Original data', markersize=5) 
-plt.plot(xs, grad*xs + inter, 'r', label='Fitted line ' + bestfittxt)
-print grad, inter
+sys.exit("end")
 
 mu = sum(Y)/len(Y)
 ttest = stats.ttest_1samp(Y, mu)
