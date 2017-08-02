@@ -13,14 +13,36 @@ from operator import itemgetter
 from scipy import stats
 from itertools import repeat
 from scipy.stats import t 
+import json
+import pandas as pd
 
-def getdata(point):
-    readfile = Dataset(point,mode='r') #read data 
-    lons = readfile.variables['longitude'][:] 
-    lats = readfile.variables['latitude'][:]
-    mean_AOD_values = readfile.variables['AOD550_mean'][:,:]
-    coordlon = np.where(lons == -63.5)
-    coordlat = np.where(lats == -11.5)
-    AOD_at_point = mean_AOD_values[coordlat,coordlon]
-    aod_out =  {"AOD_VAL" : AOD_at_point, "LON_LOCATION" : coordlon, "LAT_LOCAION": coordlat} 
-    return aod_out
+def getdata(read,lon,lat,data,coord_lon,coord_lat):
+    readfile = Dataset(read,mode='r')
+    lons = readfile.variables[lon][:] 
+    lats = readfile.variables[lat][:]
+    datavalues = readfile.variables[data][:,:]
+    print datavalues
+    coordinate_lon = np.where(lons == coord_lon)
+    coordinate_lat = np.where(lats == coord_lat)
+    data_at_point = datavalues[coordinate_lat,coordinate_lon]
+    
+   #data_at_point = float(data_at_point)
+    #dataout =  {"AATSR_READING" : data_at_point, "LON_LOCATION" : coordinate_lon, "LAT_LOCAION": coordinate_lat}
+    dataout = data_at_point
+    return dataout
+
+
+def array2json(your_array):
+    your_array = pd.Series(your_array).to_json(orient='values')
+    return your_array
+
+def remove_nan(list_unfiltered,times,months,years,filename):
+    nonan = ~np.isnan(list_unfiltered)
+    y = list_unfiltered[nonan]
+    x = times[nonan]
+    MONTHS = months[nonan]
+    YEARS = years[nonan]
+    FILES = filename[nonan]    
+    outlists = {"AOD": y, "TIMES": x,"MONTHS":MONTHS, "YEARS" : YEARS, "FILES" : FILES}
+    
+    return outlists
