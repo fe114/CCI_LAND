@@ -26,8 +26,8 @@ def aerosol_file_info(fname):
     #print MM
     MONTH = float(MM)
 
-    tOUT = { "filename" : filename, "MONTH" : MONTH, "MM" :MM, "YEAR" : YEAR, "YYYY" : YYYY }
-    return tOUT
+    OUT = { "filename" : filename, "MONTH" : MONTH, "MM" :MM, "YEAR" : YEAR, "YYYY" : YYYY }
+    return OUT
 
 #---------------------------------------------------------------------------------------------
 # Name: fetch_aerosol_file_attributes
@@ -42,13 +42,11 @@ def fetch_aerosol_file_attributes(list_of_files):
     list_of_months = [] 
     list_of_years = []
     for item in list_of_files:
-        
         item_attributes = aerosol_file_info(item)
         list_of_months.append(item_attributes['MONTH'])
         list_of_years.append(item_attributes['YEAR'])
         ts = item_attributes['YEAR'] + (item_attributes['MONTH']-0.5)/12. #centre of the month
         list_of_times.append(ts)# writing each time to a new list
-
     tOUT= { "time" : list_of_times, "month" : list_of_months, "year" : list_of_years, "file" : list_of_files }
     return tOUT
 

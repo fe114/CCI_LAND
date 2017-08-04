@@ -64,15 +64,15 @@ outpath = "/group_workspaces/cems2/nceo_generic/CCI_LAND/output_data"
 aerfile = outpath+'aodfiles.json'
 
 
-if os.path.isfile(aerfile):
-    #All files are located in extract_files that are inputs to fetch_aerosol_file_attributes
-    #that outputs a structure containing all file times.
-    aerosol_files = fetch_aerosol_file_attributes(extract_files(path,"04.01.nc")  )
-    # Writing JSON data
-    #print aerosol_files
-    with open(aerfile, 'w') as f:
+
+try: 
+    file = open(aerfile, 'r')
+except IOError:
+    file = open(aerfile, 'w')
+    aerosol_files = fetch_aerosol_file_attributes(extract_files(path,"04.01.nc"))
+    with file as f:
         json.dump(aerosol_files, f)
-#sys.exit()
+ 
 # Reading data back
 with open(aerfile, 'r') as f:
     aerosol_files = json.load(f)
@@ -82,114 +82,83 @@ with open(aerfile, 'r') as f:
     list_of_files  = aerosol_files['file']
 
 
-
-
-#sys.exit('stop')
-sortedtimes = np.argsort(list_of_times) #sorting list_of_times numerically
-sortedpath = [list_of_files[i] for i in sortedtimes] #ordering list_of_paths using corresponding sortedtimes array. 
-
-#print sortedpath
-
-file_AOD_lon_lat = outpath + 'aodlonlat.json'
-
-#if os.path.isfile(file_AOD_lon_lat):
-    #gettingdata = getdata(item,'longitude', 'latitude', 'AOD550_mean',-63.5,-11.5)
-    #print gettingdata['AATSR_READING']
-    #sys.exit()
-    #listofaods.append(gettingdata)#['AATSR_READING'])
-    #json2pd = pd.Series(gettingdata).to_json(orient='values')
-    #with open(file_AOD_lon_lat, 'w') as f:
-    # json.dump(json2pd,f) 
-    #listofaods = []
-    #aerosol_readings = json.load(opening)
-    #data_reading = aerosol_readings['AATSR_READING']
-
-if not os.path.isfile(file_AOD_lon_lat):
-  
-    AODs = [] 
-    for item in sortedpath:
-        readfile = Dataset(item,mode='r')
-        lons = readfile.variables['longitude'][:] 
-        lats = readfile.variables['latitude'][:]
-        mean_AOD_values = readfile.variables['AOD550_mean'][:,:]
-        coordlon = np.where(lons == -63.5) # locate where in list of lons where value == -63.5 
-        coordlat = np.where(lats == -11.5)
-        AOD_at_point = mean_AOD_values[coordlat,coordlon]
-        AOD_at_point = float(AOD_at_point) 
-        AODs.append(AOD_at_point)  
-    with open (file_AOD_lon_lat, 'w') as outfile:
-        json.dump(AODs,outfile)
-
-    #nans = np.argwhere(np.isnan(AODs)) 
-    #removednan = [i for j, i in enumerate(AODs) if j not in nans]
-    #np.asarray(removednan)
-    #np.savetxt(file_AOD_lon_lat, removednan, delimiter="'")   
-with open(file_AOD_lon_lat) as reading:
-    content = json.load(reading)
-    #print content
-    
 #converting lists to arrays
 times = np.asarray(list_of_times)
 months = np.asarray(list_of_months)
 years = np.asarray(list_of_years)
 files = np.asarray(list_of_files)
-aod = np.asarray(AODs)
 
-
-#index of sorted times 
-SORT = np.argsort(times)
 
 #sorting lists usings SORT index
+SORT = np.argsort(list_of_times)
 TIMES = times[SORT]
-AOD = aod[SORT]
 MONTHS = months[SORT]
 YEARS = years[SORT]
 FILES = files[SORT]
 
 
+    
+file_AOD_lon_lat = outpath + 'aodlonlat.json'
+
+
+#extracting AOD measurement, latitude and longitude information for a given coordinate 
+#writing to a file if it does not already exist 
+try: 
+    file = open(file_AOD_lon_lat, 'r')
+except IOError:
+    file = open(file_AOD_lon_lat, 'w')
+    for item in FILES:
+        gettingdata = getdata(item,'longitude', 'latitude', 'AOD550_mean',-63.5,-11.5)
+        # getdata(filepath, longitude name in .nc file, latitude name in .nc file, variable name in .nc file, lon coordinate, lat coordinate)
+    with file as f:
+        json.dump(gettingdata,f) # writing AOD value to the file
+
+#reading file and extracting data 
+with open(file_AOD_lon_lat, 'r') as reading:
+    AODs = json.load(reading)
+    
+#converting AODs to array
+AOD_VALUE = np.asarray(AODs)
 
 #removing nan values
+#~np.isnan finds index of all non nan values in AODs list
+nonan = np.where(~np.isnan(AODs))
+
+#removing item from list if the corresponding AOD value is = nan
+A = AOD_VALUE[nonan]
+S = SORT[nonan]
+T = TIMES[nonan]
+M = MONTHS[nonan]
+Y = YEARS[nonan]
+F = FILES[nonan]
+
+#converting A array to json format
+Y = array2json(A)
+
 AOD_no_nan = outpath + 'AOD_no_nan.json' 
 
-#
-#print filtered 
-
-
-nonan = ~np.isnan(AOD)
-y = AOD[nonan]
-x = TIMES[nonan]
-MONTHS = MONTHS[nonan]
-YEARS = YEARS[nonan]
-FILES = FILES[nonan]
-
-
-y = array2json(y)
-x = array2json(x)
-MONTHS = array2json(MONTHS)
-YEARS = array2json(YEARS)
-FILES = array2json(FILES)
-
-#filtered = remove_nan(AOD,TIMES,MONTHS,YEARS,FILES)
-#y = pd.Series(y).to_json(orient='values')
-
-with open(AOD_no_nan, 'w') as towrite:
-    json.dump(y, towrite)
+try: 
+    file = open(AOD_no_nan, 'r')
+except IOError:
+    file = open(AOD_no_nan, 'w')
+    with file as towrite:
+        json.dump(Y, towrite)
     
 with open(AOD_no_nan, 'r') as toread:
     data = json.load(toread)
-    print data
-sys.exit()
 
-#Monthly AOD average
+    
+month_list = linspace(1,12,12)
+
+#Calculating monthly AOD average
 count = 1
 AOD_average = []
 monthly_retrievals = []
-month_list = linspace(1,12,12)
 
 for i in range(len(month_list)):
-    location = np.where(MONTHS == count)
+    location = np.where(M == count)
     location = np.asarray(location)
-    AODMONTH = y[location]
+    AODMONTH = A[location]
     total = sum(AODMONTH)
     length = AODMONTH.size
     average = total/length
@@ -198,34 +167,33 @@ for i in range(len(month_list)):
     count = count+1 
 
 
-
-       
-    
-
-#compute anomalie for each AOD value by substracting the monthly average
+#computing anomalie for each AOD value by substracting the monthly average
 anomalies = [] 
-for i in range(len(MONTHS)):
-    anom = y[i] - AOD_average[int(MONTHS[i])-1]
+
+for i in range(len(M)):
+    anom = A[i] - AOD_average[int(M[i])-1]
     anomalies.append(anom)
+
 
 #converting plotting list to array
 anomalies = np.asarray(anomalies)
 monthly_retrievals = np.asarray(monthly_retrievals)
 
+Y1 = np.array(anomalies)
 
-#plotting AOD monthly average
-xticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] # my x ticks 
+# my x ticks 
+xticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] 
 
 
 #plot the AODs for each month from 2002-2012
-plt.plot(x, y, 'o-')
+plt.plot(T, A, 'o-')
 plt.title('Monthly AOD 2002-2012')
 plt.ylabel('AOD')
 plt.xlabel('Month')
 plt.show()
 plt.savefig( figpath + 'monthly_AOD_2002_2012.pdf')
 
-
+#number of retrievlas for each month from 2002-2012
 plt.xticks(month_list,xticks)
 plt.plot(month_list,monthly_retrievals, 'o')
 plt.title('Monthly Retrievals')
@@ -243,27 +211,28 @@ plt.savefig( figpath + 'monthly_AOD_mean_plot.pdf')
 
 #plotting AOD anomalies
 
-
 plt.title('AOD anomalies 2002-2012')
 plt.xlabel('Year')
 plt.ylabel('AOD anomaly')
-A = np.vstack([x, np.ones(len(x))]).T
-m, c = np.linalg.lstsq(A, anomalies)[0]
-y_x0= m*x[0] + c
-print y_x0
+matrix = np.vstack([T, np.ones(len(T))]).T
+m, c = np.linalg.lstsq(matrix, Y1)[0]
+
+#finding intercept at the time of the first AOD reading
+y_x0= m*T[0] + c
+
+#.5f =  5 significant figures
 bestfittxt =  '{:.5f}x + {:.10f}'.format(m, y_x0)
-plt.plot(x, anomalies, 'o', label='Original data', markersize=5) 
-plt.plot(x, m*x + c, 'r', label='Fitted line ' + bestfittxt)
-#intercept at X[0]:
 
+#plotting the points
+plt.plot(T, Y1, 'o', label='Original data', markersize=5) 
 
-mu = sum(anomalies)/len(anomalies)
-ttest = stats.ttest_1samp(anomalies, mu)
-print 't-statistic = %6.3f pvalue = %6.4f' % ttest #equal_var = False)
-print stats.t.ppf(1-0.05, len(anomalies))
+#plotting line of best fit 
+plt.plot(T, m*T + c, 'r', label='Fitted line ' + bestfittxt)
+
+#calculating the mean, variance, T statistic and p value
 
 m, v, s, k = stats.t.stats(5, moments='mvsk')
-n, (smin, smax), sm, sv, ss, sk = stats.describe(Y)
+n, (smin, smax), sm, sv, ss, sk = stats.describe(A)
 sstr = 'mean = %6.4f, variance = %6.4f'
 print 'distribution: ', sstr %(m, v)
 print 'sample: ', sstr %(sm, sv)
