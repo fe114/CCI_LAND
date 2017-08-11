@@ -17,5 +17,4 @@ def extract_files(path,suffix):
             if file.endswith(suffix):
                 file_path = (os.path.join(root, file))
                 list_of_paths.append(file_path) # writes each full file path to the empty list defined above
-    
     return list_of_paths

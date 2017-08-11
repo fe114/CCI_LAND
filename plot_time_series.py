@@ -55,15 +55,15 @@ from file_search import *
 from geolocation import *
 import csv
 
+
+
 #Paths;
 figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/'
 path = "/group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v04-01/L3_MONTHLY/"
-outpath = "/group_workspaces/cems2/nceo_generic/CCI_LAND/output_data"
+outpath = "/group_workspaces/cems2/nceo_generic/CCI_LAND/output_data/"
 
 #Check if save file containing these files already exists
 aerfile = outpath+'aodfiles.json'
-
-
 
 try: 
     file = open(aerfile, 'r')
@@ -72,7 +72,8 @@ except IOError:
     aerosol_files = fetch_aerosol_file_attributes(extract_files(path,"04.01.nc"))
     with file as f:
         json.dump(aerosol_files, f)
- 
+
+
 # Reading data back
 with open(aerfile, 'r') as f:
     aerosol_files = json.load(f)
@@ -80,6 +81,7 @@ with open(aerfile, 'r') as f:
     list_of_months = aerosol_files['month']
     list_of_years  = aerosol_files['year']
     list_of_files  = aerosol_files['file']
+
 
 
 #converting lists to arrays
@@ -96,27 +98,36 @@ MONTHS = months[SORT]
 YEARS = years[SORT]
 FILES = files[SORT]
 
-
     
-file_AOD_lon_lat = outpath + 'aodlonlat.json'
+file_AOD_lon_lat = outpath + 'aodlonlat.csv'
 
 
 #extracting AOD measurement, latitude and longitude information for a given coordinate 
 #writing to a file if it does not already exist 
+
 try: 
     file = open(file_AOD_lon_lat, 'r')
 except IOError:
-    file = open(file_AOD_lon_lat, 'w')
+    aodmeans = []
     for item in FILES:
         gettingdata = getdata(item,'longitude', 'latitude', 'AOD550_mean',-63.5,-11.5)
-        # getdata(filepath, longitude name in .nc file, latitude name in .nc file, variable name in .nc file, lon coordinate, lat coordinate)
-    with file as f:
-        json.dump(gettingdata,f) # writing AOD value to the file
+        aodmeans.append(gettingdata)# getdata(filepath, longitude name in .nc file, latitude name in .nc file, variable name in .nc file, lon coordinate, lat coordinate)
+    with open(file_AOD_lon_lat, "w") as output:
+        writer = csv.writer(output, lineterminator='\n')
+        for val in aodmeans:
+            writer.writerow([val]) 
+             
 
+       
+AODs = []
+with open(file_AOD_lon_lat,"r") as r:
+        reader = csv.reader(r,delimiter=' ')
+        for row in reader:   
+            AODvals = float((",".join(row)))
+            AODs.append(AODvals)
 #reading file and extracting data 
-with open(file_AOD_lon_lat, 'r') as reading:
-    AODs = json.load(reading)
-    
+  
+
 #converting AODs to array
 AOD_VALUE = np.asarray(AODs)
 
@@ -180,40 +191,50 @@ anomalies = np.asarray(anomalies)
 monthly_retrievals = np.asarray(monthly_retrievals)
 
 Y1 = np.array(anomalies)
-
+print 'standard dev', np.std(Y1, axis = 0)
 # my x ticks 
 xticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] 
-
+year_list = linspace(2002,2012,11)
 
 #plot the AODs for each month from 2002-2012
 plt.plot(T, A, 'o-')
-plt.title('Monthly AOD 2002-2012')
-plt.ylabel('AOD')
-plt.xlabel('Month')
+plt.title('Monthly AOD 2002-2012', fontsize = 14)
+plt.yticks(fontsize = 14)
+plt.xticks(fontsize = 14)
+plt.ylabel('AOD', fontsize = 14)
+plt.xlabel('Month', fontsize = 14)
 plt.show()
 plt.savefig( figpath + 'monthly_AOD_2002_2012.pdf')
 
 #number of retrievlas for each month from 2002-2012
-plt.xticks(month_list,xticks)
+plt.xticks(month_list,xticks, fontsize = 14)
+plt.yticks(fontsize = 14)
 plt.plot(month_list,monthly_retrievals, 'o')
-plt.title('Monthly Retrievals')
+plt.title('Monthly Retrievals', fontsize = 14)
+plt.ylabel('Total Number of Retrievals', fontsize = 14)
+plt.xlabel('Month', fontsize = 14)
+
 plt.show()
 
 
 #plotting monthly AOD mean
-plt.xticks(month_list, xticks)
+plt.xticks(month_list, xticks, fontsize = 14)
+plt.yticks(fontsize = 14)
 plt.plot(month_list, AOD_average, 'o-')
-plt.title('Mean Monthly AOD 2002-2012')
-plt.ylabel('AOD')
-plt.xlabel('Month')
+plt.title('Mean Monthly AOD 2002-2012', fontsize = 14)
+plt.ylabel('AOD', fontsize = 14)
+plt.xlabel('Month', fontsize = 14)
 plt.show()
 plt.savefig( figpath + 'monthly_AOD_mean_plot.pdf')
 
 #plotting AOD anomalies
-
-plt.title('AOD anomalies 2002-2012')
-plt.xlabel('Year')
-plt.ylabel('AOD anomaly')
+fig = plt.figure(figsize=(16,4))
+ax = fig.add_subplot(111)
+plt.title('AOD anomalies 2002-2012', fontsize = 14)
+plt.xlabel('Year',fontsize = 14 )
+plt.ylabel('AOD Anomaly', fontsize = 14)
+plt.yticks(fontsize = 14)
+plt.xticks(year_list,fontsize = 14)
 matrix = np.vstack([T, np.ones(len(T))]).T
 m, c = np.linalg.lstsq(matrix, Y1)[0]
 
