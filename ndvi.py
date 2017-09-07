@@ -60,6 +60,7 @@ from math import *
 
 def get_ndvi_data(file_outpath,path,suffix):
     F = (extract_files(path,'.hdf'))
+    
     try:    
         file = open(file_outpath,'r')
     except IOError: # writing to file if it doesn't exist
@@ -67,7 +68,7 @@ def get_ndvi_data(file_outpath,path,suffix):
         file = open(file_outpath, 'w')
         with file as f:
             json.dump(fileinfo, f) 
-
+            
     with open(file_outpath,'r') as reading:
         filedata = json.load(reading)
         Year = filedata['Year']
@@ -93,7 +94,8 @@ def get_ndvi_data(file_outpath,path,suffix):
     FILE = np.asarray(F)[SORT]
     return YEAR,DAY,TIME,MONTH,FILE
        
-def ndvi_data_for_coordinate_range(outpath,files,months,times,dataname,latbnds,lonbnds,scale_factor,add_offset):
+def ndvi_data_for_coordinate_range(outpath,files,months,times,years,dataname,latbnds,lonbnds,scale_factor,add_offset):
+    
     try:
         file = open(outpath,"r")
     except IOError:
@@ -106,6 +108,8 @@ def ndvi_data_for_coordinate_range(outpath,files,months,times,dataname,latbnds,l
             writer = csv.writer(output, lineterminator='\n')
             for val in ndvi_means:
                 writer.writerow([val])
+           
+    
     ndvi_vals = []
     with open(outpath,"r") as r:
         reader = csv.reader(r,delimiter=' ')
@@ -114,6 +118,8 @@ def ndvi_data_for_coordinate_range(outpath,files,months,times,dataname,latbnds,l
             ndvi_vals.append(values)
             
     NDVIs = np.asarray(ndvi_vals)
+    
+    seasonal_anoms = seasonal_anomalies(years,months,times,NDVIs,'NDVI yearly means time series dry season','NDVI yearly means time series wet season', 'NDVI means')
     #calculating monthly average and writing to list
     data = monthly_average(months,NDVIs)
     monthly_retrievals = data[1]
@@ -130,13 +136,21 @@ def ndvi_data_for_coordinate_range(outpath,files,months,times,dataname,latbnds,l
     monthly_retrievals = np.asarray(monthly_retrievals)
     Anoms = np.array(anomalies)
 
-    out = {'Monthly Retrievals':monthly_retrievals,'Anomalies': Anoms, 'NDVIs':NDVIs, 'Average NDVI':NDVI_average, 'Times':times}
+    out = {'Monthly Retrievals':monthly_retrievals,'Anomalies': Anoms, 'NDVIs':NDVIs, 'Average NDVI':NDVI_average, 'Times':times, 'dry times': seasonal_anoms['dry times'], 'rainy times': seasonal_anoms['rainy times'], 'rainy anomalies': seasonal_anoms['rainy anomalies'], 'dry anomalies': seasonal_anoms['dry anomalies'],'nine year anoms wet': seasonal_anoms['nine year anomalies rain'],'nine year anoms dry': seasonal_anoms['nine year anomalies dry']}
     return out
     
-    
-def process_ndvi(lonbnds,latbnds,outpath,ndvi_path,suffix):
-    ndvi_outpath = outpath + "NDVI_files.json"
-    mean_ndvi_out = outpath + "mean_ndvi_out.csv"
+
+def process_ndvi(lonbnds,latbnds,outpath,ndvi_path,suffix, ndvi_files_suffix, ndvi_means_suffix):
+    ndvi_outpath = outpath + ndvi_files_suffix
+    mean_ndvi_out = outpath + ndvi_means_suffix
     getdata = get_ndvi_data(ndvi_outpath,ndvi_path,suffix)
-    attributes = ndvi_data_for_coordinate_range(mean_ndvi_out,getdata[4],getdata[3], getdata[2],'CMG 0.05 Deg Monthly NDVI',latbnds,lonbnds,10000.,0.)
+    attributes = ndvi_data_for_coordinate_range(mean_ndvi_out,getdata[4],getdata[3], getdata[2],getdata[0],'CMG 0.05 Deg Monthly NDVI',latbnds,lonbnds,10000.,0.)
+    return attributes
+
+ 
+def process_ndvi_mg(lonbnds,latbnds,outpath,ndvi_path,suffix):
+    ndvi_outpath = outpath + "NDVI_files_mg.json"
+    mean_ndvi_out = outpath + "mean_ndvi_out_mg.csv"
+    getdata = get_ndvi_data(ndvi_outpath,ndvi_path,suffix)
+    attributes = ndvi_data_for_coordinate_range(mean_ndvi_out,getdata[4],getdata[3], getdata[2],getdata[0],'CMG 0.05 Deg Monthly NDVI',latbnds,lonbnds,10000.,0.)
     return attributes

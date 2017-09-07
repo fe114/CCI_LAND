@@ -37,15 +37,11 @@ import json
 import pandas as pd
 from numpy import * 
 from math import *
-import os,sys
 from netCDF4 import Dataset
 import numpy as np
 import cartopy.crs as ccrs
 import cartopy.feature as cf
 import matplotlib.pyplot as plt
-import fnmatch
-import matplotlib.pyplot as plt 
-import itertools
 from operator import itemgetter 
 from scipy import stats
 from itertools import repeat
@@ -81,7 +77,6 @@ with open(aerfile, 'r') as f:
     list_of_months = aerosol_files['month']
     list_of_years  = aerosol_files['year']
     list_of_files  = aerosol_files['file']
-
 
 
 #converting lists to arrays
@@ -197,10 +192,12 @@ xticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 
 year_list = linspace(2002,2012,11)
 
 #plot the AODs for each month from 2002-2012
+fig = plt.figure(figsize=(16,4))
+ax = fig.add_subplot(111)
 plt.plot(T, A, 'o-')
 plt.title('Monthly AOD 2002-2012', fontsize = 14)
 plt.yticks(fontsize = 14)
-plt.xticks(fontsize = 14)
+plt.xticks(year_list,fontsize = 14)
 plt.ylabel('AOD', fontsize = 14)
 plt.xlabel('Month', fontsize = 14)
 plt.show()

@@ -17,7 +17,7 @@ import json
 import pandas as pd
 import pickle
 
-def getdata(read,lon,lat,data,coord_lon,coord_lat):
+def getdata(read,lat,lon,data,coord_lat,coord_lon):
     readfile = Dataset(read,mode='r')
     lons = readfile.variables[lon][:] 
     lats = readfile.variables[lat][:]
@@ -35,7 +35,6 @@ def array2json(your_array):
 
 def remove_nan(list_unfiltered,times,months,years,filename):
     nonan = ~np.isnan(list_unfiltered)
-    print 'no_nan', nonan
     y =list_unfiltered[nonan]
     x = times[nonan]
     MONTHS = months[nonan]
@@ -43,7 +42,7 @@ def remove_nan(list_unfiltered,times,months,years,filename):
     FILES = filename[nonan]
     return y,x,MONTHS,YEARS,FILES
                             
-def getdata_coordinategrid(read,lon,lat,lat_boundary,lon_boundary,variable):
+def getdata_coordinategrid_lon_lat(read,lon,lat,lon_boundary,lat_boundary,variable):
         readfile = Dataset(read,mode='r')
         #print readfile.variables.keys()
         lons = readfile.variables[lon][:]
@@ -57,6 +56,21 @@ def getdata_coordinategrid(read,lon,lat,lat_boundary,lon_boundary,variable):
         lon_max = lon_inds[len(lon_inds)-1]
         precip = readfile.variables[variable][lon_zero:lon_max,lat_zero:lat_max]
         return precip
+ 
+def getdata_coordinategrid_lat_lon(read,lon,lat,lon_boundary,lat_boundary,variable):
+        readfile = Dataset(read,mode='r')
+        #print readfile.variables.keys()
+        lons = readfile.variables[lon][:]
+        lats = readfile.variables[lat][:]
+        lat_inds = np.where((lats > lat_boundary[0]) & (lats < lat_boundary[1]))[0]
+        lon_inds = np.where((lons > lon_boundary[0]) & (lons < lon_boundary[1]))[0]
+        lat_zero = lat_inds[0]
+        lat_max = lat_inds[len(lat_inds)-1]
+        lat_zero, lat_max
+        lon_zero = lon_inds[0]
+        lon_max = lon_inds[len(lon_inds)-1]
+        precip = readfile.variables[variable][lat_zero:lat_max,lon_zero:lon_max]
+        return precip   
     
 def grid_average(precip):
         sum_list = []

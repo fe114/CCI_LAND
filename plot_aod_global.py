@@ -35,16 +35,13 @@ Freya Espir
 
 from numpy import * 
 from math import *
-import os,sys
 from netCDF4 import Dataset
 import numpy as np
 import cartopy.crs as ccrs
-import cartopy.feature as cf
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import xarray as xr
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-from matplotlib.backends.backend_pdf import PdfPages
+
 
 figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/'
 
@@ -53,11 +50,13 @@ figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/'
 Aero_data = '/group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v04-01/L3_MONTHLY/2008/200806-ESACCI-L3C_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC-MONTHLY-fv04.01.nc'
 readfile = Dataset(Aero_data, mode='r') #reading the data
 print readfile.file_format
-#print readfile.variables['AOD550_mean']
+
+
 lons = readfile.variables['longitude'][:] #retreive the longitude variables from the data file
 lats = readfile.variables['latitude'][:] #for the latitude variables
 AOD_mean = readfile.variables['AOD550_mean'][:,:]  
-readfile.close() 
+readfile.close()
+ 
 print "AOD_mean =\n",AOD_mean[:,:]
 print "latitudes =\n",lats[:]
 print "longitudes =\n",lats[:]
@@ -107,9 +106,12 @@ gl.xformatter = LONGITUDE_FORMATTER
 gl.yformatter = LATITUDE_FORMATTER
 
 #mark on coastlines 
-ax.coastlines()
+ax.coastlines(color = 'white')
 plt.title('Global distribution of Aerosol Optical Depth at 550nm for June 2008')
-plt.savefig( figpath + 'aerosol.pdf')
+plt.savefig( figpath + 'aerosol.pdf', 
+               bbox_inches='tight', 
+               transparent=True,
+               pad_inches=0)
 
 #show the plot
 plt.show()

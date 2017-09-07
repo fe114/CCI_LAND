@@ -56,13 +56,14 @@ from AOD import *
 import csv
 
 def get_precip_data(file_outpath,path,suffix):
+    
     try:    
         file = open(file_outpath,'r')
     except IOError: # writing to file if it doesn't exist
         precipitation = fetch_aerosol_file_attributes(extract_files(path,suffix))
         file = open(file_outpath, 'w')
         with file as f:
-            json.dump(precipitation, f) 
+            json.dump(precipitation, f)
 
     # Reading data back
     with open(file_outpath, 'r') as f:
@@ -89,22 +90,22 @@ def get_precip_data(file_outpath,path,suffix):
     
     return SORT,TIMES,MONTHS,YEARS,FILES
                          
-def data_for_coordinate_range(outpath,files,times,latname,lonname,dataname,latbnds,lonbnds,months):
+def data_for_coordinate_range(outpath,files,times,years,latname,lonname,dataname,latbnds,lonbnds,months):
+    all_precip_means = []
+    
     try: 
         file = open(outpath, 'r')
     except IOError:
         all_precip_means = []
         for item in files:
-            precip = getdata_coordinategrid(item, lonname,latname,latbnds,lonbnds,dataname)                       
+            precip = getdata_coordinategrid_lon_lat(item,lonname,latname,lonbnds,latbnds,dataname)                       
             mean_precip = grid_average(precip)
             all_precip_means.append(mean_precip)
         with open(outpath, "w") as output:
             writer = csv.writer(output, lineterminator='\n')
             for val in all_precip_means:
                 writer.writerow([val]) 
-
-#ndvi = outpath + 'ndvi_mean.csv'
-
+     
     precip_vals = []
     with open(outpath,"r") as r:
         reader = csv.reader(r,delimiter=' ')
@@ -113,7 +114,7 @@ def data_for_coordinate_range(outpath,files,times,latname,lonname,dataname,latbn
             precip_vals.append(values)
     precipitations = np.asarray(precip_vals)
 
-
+    seasonal_anoms = seasonal_anomalies(years,months,times,precipitations,'Precipitation yearly means time series dry season','Precipitation yearly means time series wet season', 'Precipitation means')
     #calculating monthly average and writing to list
     data = monthly_average(months,precipitations)
     monthly_retrievals = data[1]
@@ -129,14 +130,22 @@ def data_for_coordinate_range(outpath,files,times,latname,lonname,dataname,latbn
     #converting plotting list to array
     anomalies = np.asarray(anomalies)
     monthly_retrievals = np.asarray(monthly_retrievals)
-    Anoms = np.array(anomalies)
-    out = {'Monthly Retrievals':monthly_retrievals,'Anomalies': Anoms, 'Precipitation':precipitations, 'Average Precipitation':precip_average, 'Times':times}
+    
+    out = {'Monthly Retrievals':monthly_retrievals,'Anomalies': anomalies, 'Precipitation':precipitations, 'Average Precipitation':precip_average, 'Times':times, 'dry times': seasonal_anoms['dry times'], 'rainy times': seasonal_anoms['rainy times'], 'rainy anomalies': seasonal_anoms['rainy anomalies'], 'dry anomalies': seasonal_anoms['dry anomalies']}
     return out
     
-def process_precip(lonbnds,latbnds,outpath,precip_path):
-    precip_outpath = outpath+'precipitation.txt'
-    mean_precip_out = outpath = 'precip_means.csv'
+def process_precip(lonbnds,latbnds,outpath,precip_path, precip_out_suffix, mean_precip_out_suffix):
+    precip_outpath = outpath + precip_out_suffix
+    mean_precip_out = outpath + mean_precip_out_suffix
     getdata=get_precip_data(precip_outpath,precip_path,"_TRMM_3B43.7.nc")
-    data_coord_range = data_for_coordinate_range(mean_precip_out,getdata[4],getdata[1],'nlat','nlon','precipitation',latbnds,lonbnds,getdata[2])
+    data_coord_range = data_for_coordinate_range(mean_precip_out,getdata[4],getdata[1],getdata[3],'nlat','nlon','precipitation',latbnds,lonbnds,getdata[2])
+    return data_coord_range
+'precipitation_mg.txt', 'precip_means_mg.csv'
+def process_precip_mg(lonbnds,latbnds,outpath,precip_path):
+    precip_outpath = outpath+'precipitation_mg.txt'
+    mean_precip_out = outpath + 'precip_means_mg.csv'
+    getdata=get_precip_data(precip_outpath,precip_path,"_TRMM_3B43.7.nc")
+    data_coord_range = data_for_coordinate_range(mean_precip_out,getdata[4],getdata[1],getdata[3],'nlat','nlon','precipitation',latbnds,lonbnds,getdata[2])
+
     
     return data_coord_range

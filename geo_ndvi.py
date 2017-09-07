@@ -58,7 +58,8 @@ def get_NDVI_readings(item,lat_bnds,lon_bnds,datasetname,scale_factor,add_offset
     sds_obj = file.select(datasetname) # select sds
     geodata = geo_ndvi()
     lat = geodata['latitude'] #list of latitudes 
-    lon = geodata['longitude'] # list of longitudes
+    lon = geodata['longitude'] 
+    # list of longitudes
     lat_inds = np.where((lat > lat_bnds[0]) & (lat < lat_bnds[1]))[0] #index value of all latitudes within coodinate grid
     lon_inds = np.where((lon > lon_bnds[0]) & (lon < lon_bnds[1]))[0] #index value of all longiudes within coodinate grid
     lat_zero = lat_inds[0] # lower boundary latitude value

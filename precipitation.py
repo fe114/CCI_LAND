@@ -39,7 +39,6 @@ Freya Espir
 """
 
 import json
-import pandas as pd
 from numpy import * 
 from math import *
 import sys
@@ -49,7 +48,6 @@ import numpy as np
 import cartopy.crs as ccrs
 import cartopy.feature as cf
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt 
 from operator import itemgetter 
 from scipy import stats
 from itertools import repeat
@@ -58,7 +56,7 @@ from atsr import *
 from file_search import *
 from geolocation import *
 import csv
-import StringIO
+
 
 #Paths;
 figpath = "/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/"
@@ -76,15 +74,12 @@ except IOError: # writing to file if it doesn't exist
     with file as f:
         json.dump(precipitation, f) 
 
-# Reading data back
 with open(precip_outpath, 'r') as f:
     attributes = json.load(f)
     dates  = attributes['time']
     months = attributes['month']
     years  = attributes['year']
     files  = attributes['file']
-
-
 #list to array
 date = np.asarray(dates)
 m = np.asarray(months)
@@ -97,9 +92,10 @@ SORT = np.argsort(date)
 TIMES = date[SORT]
 FILES = f[SORT]
 YEARS = yr[SORT]
-MONTHS = m[SORT] 
-          
+MONTHS = m[SORT]        
 mean_precip_out = outpath = 'precip_means.csv'
+
+
 
 #latitude and longitude cooridnates for Rondonia region 
 lat_bnds, lon_bnds = [-12, -11], [-64, -63]
@@ -127,6 +123,7 @@ with open(mean_precip_out,"r") as r:
             values = float((",".join(row)))
             precip_vals.append(values)
 precipitations = np.asarray(precip_vals)
+print precipitations
 
 
 #calculating monthly average and writing to list
@@ -150,14 +147,12 @@ monthly_retrievals = np.asarray(monthly_retrievals)
 Y1 = np.array(anomalies)
 
 #stadard deviation for anomalies 
-print 'anomalies standard dev', np.std(Y1, axis = 0)
 
 # my x ticks 
 xticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] 
 
 year_list = linspace(2000,2018,19)
 month_list = linspace(1,12,12) 
-
 
 #plot the precipitation for each month from 2002-2012
 fig = plt.figure(figsize=(20,4))
@@ -170,7 +165,7 @@ plt.ylabel('Mean Precipitation(mm/hr)', fontsize = 14)
 plt.xlabel('Month', fontsize = 14)
 #plt.xlim([200000,200250])
 plt.show()
-#plt.savefig( figpath + 'monthly_AOD_2002_2012.pdf')
+plt.savefig( figpath + 'monthly_AOD_2002_2012.pdf')
 
 #number of retrievlas for each month from 2002-2012
 plt.xticks(month_list,xticks, fontsize = 14)
@@ -179,7 +174,6 @@ plt.plot(month_list,monthly_retrievals, 'o')
 plt.title('Monthly Retrievals \n', fontsize = 16)
 plt.ylabel('Total Number of Retrievals', fontsize = 14)
 plt.xlabel('Month', fontsize = 14)
-
 plt.show()
 
 
@@ -188,12 +182,12 @@ plt.xticks(month_list, xticks, fontsize = 14)
 plt.yticks(fontsize = 14)
 plt.plot(month_list, precip_average, 'o-')
 plt.title('Average Precipitation per Month, May 2000- March 2017 \n', fontsize = 16)
-plt.ylabel('Average Precipitation (mm/hr)', fontsize = 14)
+plt.ylabel('Average Monthly Precipitation (mm/hr)', fontsize = 14)
 plt.xlabel('Month', fontsize = 14)
 plt.show()
 #plt.savefig( figpath + 'monthly_AOD_mean_plot.pdf')
 
-
+sys.exit()
 #plotting precipitation anomalies
 plt.title('Precipitation Anomalies May 2000 - March 2017 \n', fontsize = 16)
 plt.xlabel('Year',fontsize = 14 )
