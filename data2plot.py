@@ -16,13 +16,9 @@ plot types include:
 6. The figure name will be catagorised by the lat an lon location 
 
 #---------------------------------------------------------------------------------------------
+'''
 
 
-"""
-Created on Thu Sep  7 17:00:34 2017
-
-@author: fespir
-"""
 from numpy import * 
 import math
 from math import *
@@ -54,16 +50,16 @@ from scipy.stats import linregress
 
 figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/rondonia/'
 outpath = "/group_workspaces/cems2/nceo_generic/CCI_LAND/output_data/"
+
 '''
 ---------------------
-function to read text files containing a python dictionary
+datafile function reads text files containing a python dictionary
 for AOD, the datafile will a dictionary containing the return the following lists:
 'Anomalies','Monthly Retrievals','AOD Monthly Average','Times','AOD Measurements','dry times', 'rainy times', 'rainy anomalies', 'dry anomalies', 'nine year anoms wet','nine year anoms dry', 'Standardised Anomalies'
 for example to extract AOD monthly readings from the dictionary:
     AOD = datafile(outpath,lat,lon,AODsuffix)['AOD Measurements']
 --------------------
 '''
-
 def datafile(outpath,lat,lon,suffix):
     with open(outpath+lat+lon+suffix, 'rb') as handle:
         dictionary = pickle.loads(handle.read())
@@ -125,22 +121,22 @@ PAR_direct_corr = PAR_direct*gamma
 
 #using the scatterplot function in pltplots.py script 
 # scatterplot(x_data, y_data, xlabel, ylabel,title)
-scatterplot(toa_allsky_time,daily_solar_toa,'Time (month)','Daily Solar toa (W/$m^2$', 'Daily Solar toa 10S 64W')
+scatterplot(toa_allsky_time,daily_solar_toa_corrected,'Time (month)','Daily Solar toa (W/$m^2$', 'Daily Solar toa 10S 64W')
 
-scatterplot(PAR_total_time,PAR_tot_corr, 'Time (month)','PAR total corrected', 'Total PAR - Monthly average 10S 64W')
+scatterplot(PAR_total_time,PAR_tot_corr, 'Time (month)','boa PAR total corrected', 'Total PAR - Monthly average 10S 64W')
 
-scatterplot(toa_allsky_time,toa_allsky,'Time (month)','toa allsky', ' TOA_Allsky Monthly 10S 64W' )
+scatterplot(toa_allsky_time,toa_allsky,'Time (month)','PAR toa allsky down / W/$m^2$', ' TOA_Allsky Monthly 10S 64W' )
 
 scatterplot(PAR_total_time,toa_par_tot_allsky,'Time (month)','toa PAR total allsky', 'PAR toa total allsky 10S 64W') 
 
 #using pltplot.py lineofbestfit function to produce a scatter plot with a line of best fit and saving image to a .pdf file
 #lineofbestfit(xdata,ydata, xlabel, ylabel, savefigure_path, figure suffix)
-lineofbestfit(CF,PAR_diffuse, 'Cloud Fraction', 'PAR Diffuse (W/m^2)', figpath,lat+lon+ 'par_diff_CF.pdf')
-lineofbestfit(CF,PAR_total, 'Cloud Fraction', 'PAR Total (W/m^2)', figpath, lat+lon+'par_diff_CF.pdf')
-lineofbestfit(CF,PAR_direct, 'Cloud Fraction', 'PAR Direct (W/m^2)', figpath, lat+lon+'par_diff_CF.pdf')
+lineofbestfit(CF,PAR_diffuse, 'Cloud Fraction', 'boa PAR Diffuse (W/$m^2$)', figpath,lat+lon+ 'par_diff_CF.pdf')
+lineofbestfit(CF,PAR_total, 'Cloud Fraction', 'boa PAR Total (W/$m^2$)', figpath, lat+lon+'par_diff_CF.pdf')
+lineofbestfit(CF,PAR_direct, 'Cloud Fraction', 'boa PAR Direct (W/$m^2$)', figpath, lat+lon+'par_diff_CF.pdf')
 
 # one plot of CF against the three datasets: PAR_diffuse, PAR_total and PAR_direct
-triplotsharex(CF,CF,CF,PAR_diffuse,PAR_total,PAR_direct,'Cloud Fraction','PAR_diff', 'PAR_tot', 'PAR_direct', figpath,lat+lon+"CF_par_corr.pdf",'PAR vs Cloud Fraction ' +lat+ "N " +lon + "E")
+triplotsharex(CF,CF,CF,PAR_diffuse,PAR_total,PAR_direct,'Cloud Fraction','boa PAR_diff W/$m^2$', 'boa PAR_tot W/$m^2$', 'boa PAR_direct W/$m^2$', figpath,lat+lon+"CF_par_corr.pdf",'PAR vs Cloud Fraction ' +lat+ "N " +lon + "E")
 
 
 
@@ -157,11 +153,11 @@ PAR_direct_at_AOD = PAR_direct[xtime_equals_ytime(AOD_time,PAR_total_time)]
 # three plot of AOD against the datasets: PAR_diffuse, PAR_total and PAR_direct - NOT CORRECTED
 #x axis is shared
 #triploshare(x1,x2,x3,y1,y2,y3,xlabel, y1label, y2label, y3label, figurepath, figure suffix, figure title )
-triplotsharex(AOD,AOD,AOD,PAR_diff_at_AOD,PAR_total_at_AOD,PAR_direct_at_AOD, 'AOD', 'PAR_diff / W/$m^2$', 'PAR_tot / W/$m^2$', 'PAR_direct / W/$m^2$',figpath,lat+lon+ "AOD_par.pdf", "AOD vs PAR " +lat+ "N " +lon + "E") 
+triplotsharex(AOD,AOD,AOD,PAR_diff_at_AOD,PAR_total_at_AOD,PAR_direct_at_AOD, 'AOD', 'boa PAR_diff / W/$m^2$', 'boa PAR_tot / W/$m^2$', 'boa PAR_direct / W/$m^2$',figpath,lat+lon+ "AOD_par.pdf", "AOD vs PAR " +lat+ "N " +lon + "E") 
 
 
 # three plots of CF against datasets: PAR_diffuse, PAR_total and PAR_direct - CORRECTED
-triplotsharex(CF,CF,CF,PAR_diff_corr,PAR_tot_corr,PAR_direct_corr, 'Cloud Fraction', 'PAR_diff_corr / W/$m^2$','PAR_tot_corr / W/$m^2$','PAR_direct_corr / W/$m^2$',figpath, lat+lon+ "CF_par_corr.pdf", "Cloud Fraction vs PAR_Corrected " +lat+ "N " +lon + "E" )
+triplotsharex(CF,CF,CF,PAR_diff_corr,PAR_tot_corr,PAR_direct_corr, 'Cloud Fraction', 'boa PAR_diff_corr / W/$m^2$','boa PAR_tot_corr / W/$m^2$','boa PAR_direct_corr / W/$m^2$',figpath, lat+lon+ "CF_par_corr.pdf", "Cloud Fraction vs PAR_Corrected " +lat+ "N " +lon + "E" )
 
 
 PAR_diff_at_AOD_corr = PAR_diff_corr[xtime_equals_ytime(AOD_time,PAR_diffuse_time)]
@@ -169,7 +165,7 @@ PAR_tot_at_AOD_corr = PAR_tot_corr[xtime_equals_ytime(AOD_time,PAR_total_time)]
 PAR_direct_at_AOD_corr =  PAR_direct_corr[xtime_equals_ytime(AOD_time,PAR_total_time)]
 
 # Three plos AOD against the three datasets: PAR_diffuse, PAR_total and PAR_direct - CORRECTED
-triplotsharex(AOD,AOD,AOD,PAR_diff_at_AOD_corr ,PAR_tot_at_AOD_corr,PAR_direct_at_AOD_corr, 'AOD', 'PAR_diff / W/$m^2$', 'PAR_tot / W/$m^2$', 'PAR_direct / W/$m^2$',figpath,lat+lon+"AOD_par_corected.pdf", "AOD vs PAR Corrected "+lat+ "N " +lon + "E")
+triplotsharex(AOD,AOD,AOD,PAR_diff_at_AOD_corr ,PAR_tot_at_AOD_corr,PAR_direct_at_AOD_corr, 'AOD', 'boa PAR_diff / W/$m^2$', 'boa PAR_tot / W/$m^2$', 'boa PAR_direct / W/$m^2$',figpath,lat+lon+"AOD_par_corected.pdf", "AOD vs PAR Corrected "+lat+ "N " +lon + "E")
 
 
 #3x2 plot of the monthly data readings against time
@@ -182,15 +178,16 @@ gridplot(AOD_time, CF_time, NDVI_time, PAR_diffuse_time, PAR_total_time, PRECIP_
 
 fig4 = plt.figure(figsize=(4,4))
     
-plt.plot(CF,PAR_diffuse,'o',label = 'PAR diffuse')
+plt.plot(CF,PAR_diffuse,'o',label = 'boa PAR diffuse')
 plt.xlabel('Cloud Fraction')
 plt.ylabel('PAR (W/$m^2$)')
 bestfitline(CF,PAR_diffuse)
-plt.plot(CF,PAR_total,'o', label = 'PAR total')
+plt.plot(CF,PAR_total,'o', label = 'boa PAR total')
 bestfitline(CF,PAR_total)
-plt.plot(CF,PAR_direct,'o', label = 'PAR direct')
+plt.plot(CF,PAR_direct,'o', label = 'boa PAR direct')
 bestfitline(CF,PAR_direct)
 plt.show()
+plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 fig4.savefig(figpath + lat+lon+"CF_par_controlregion.pdf" , bbox_inches='tight')
 
 
@@ -219,7 +216,7 @@ plt.show()
 
 plt.plot( CF, toa_allsky,'o', label = 'cloud fraction')
 plt.xlabel('Cloud Fraction')
-plt.ylabel('toa_allsky')
+plt.ylabel('toa shortwave down allsky')
 plt.legend()
 plt.show()
 
@@ -241,9 +238,9 @@ total = PAR_April_tot[xtime_equals_ytime(PAR_April_times,AOD_April_times)]
 direct = PAR_April_direct[xtime_equals_ytime(PAR_April_times,AOD_April_times)]
 
 
-lineofbestfit(AOD_April,direct,'AOD', 'PAR direct April (W/m^2)',figpath, lat+lon+'aod_par_direct_april.pdf')
-lineofbestfit(AOD_April, total, 'AOD','PAR total April (W/m^2)', figpath, lat+lon+ 'aod_par_total_april.pdf')
-lineofbestfit(AOD_April,diffuse,'AOD','PAR diffuse April (W/m^2)',figpath, lat+ lon+ 'aod_par_diff_april.pdf')
+lineofbestfit(AOD_April,direct,'AOD', 'boa PAR direct April (W/$m^2$)',figpath, lat+lon+'aod_par_direct_april.pdf')
+lineofbestfit(AOD_April, total, 'AOD','boa PAR total April (W/$m^2$)', figpath, lat+lon+ 'aod_par_total_april.pdf')
+lineofbestfit(AOD_April,diffuse,'AOD','boa PAR diffuse April (W/$m^2$)',figpath, lat+ lon+ 'aod_par_diff_april.pdf')
 
 
 
@@ -341,7 +338,7 @@ p = gridplot(x1,x2,x3,x4a,x4b,x5,y1,y2,y3,y4a,y4b,y5,figpath,lat+lon+"monthlyano
 #precipitation data is larger than cf data
 
 precip_at_cf = PRECIP[xtime_equals_ytime(x3,x5)]
-lineofbestfit(precip_at_cf, CF, 'recipitation / mm/hr ', 'Cloud Fraction',figpath, lat+lon +'cfvprecip.pdf')
+lineofbestfit(precip_at_cf, CF, 'Precipitation / mm/hr ', 'Cloud Fraction',figpath, lat+lon +'cfvprecip.pdf')
 
 #NDVI vs PAR
 ndvi_at_PAR = NDVI[xtime_equals_ytime(x2,x4b)]

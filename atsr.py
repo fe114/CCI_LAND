@@ -1,9 +1,10 @@
 
 #---------------------------------------------------------------------------------------------
 # Name: Module containing ATSR file read functions
-# Functions: aerosol_file_info, aerosol_file_attributes
+# Functions: aerosol_file_info, aerosol_file_attributes, seasonal anomalies
 # History:
 #   07/27/17 MC: add ATSR filename reader module for aerosol files
+#   08/20/17 FE: add seasonal_anomalies function for all files
 #---------------------------------------------------------------------------------------------
 
 
@@ -53,7 +54,7 @@ def fetch_aerosol_file_attributes(list_of_files):
 
 
 #--------------------------------------------------------------------------------------------
-
+'''
 def landuse_file_info(fname):
 
     # seperating the file path by '/'
@@ -88,7 +89,7 @@ def fetch_landuse_file_attributes(list_of_files):
         list_of_times.append(ts)# writing each time to a new list
     tOUT= { "time" : list_of_times, "month" : list_of_months, "year" : list_of_years, "file" : list_of_files }
     return tOUT
-
+'''
     
 def seasonal_anomalies(Years, Months, Times, Data, datatitledry,datatitlewet, dataname):
     ti = 2003

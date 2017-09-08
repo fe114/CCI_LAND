@@ -2,16 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 NAME;
-Monthly time series of precipitation from May 2000 - March 2017 for the Rondonia region 
+Precipitation processor 
 
 PURPOSE;
-This program processes monthly precipitation data (mm/hr) for the Rondonia region (11S,63W).
-Plots:
-1. Precipitation rate vs month
-2. Number of precipitation retrievals over the 17 year period vs month
-3. Mean precipitation per month vs month
-4. Monthly precipitation anomalies vs year 
-
+This program processes monthly precipitation data (mm/hr) for a given coodinate range
 
 DESCRIPTION;
 The processor uses information from 203 monthly TRMM datasets from 2000 - 2017.
@@ -135,17 +129,9 @@ def data_for_coordinate_range(outpath,files,times,years,latname,lonname,dataname
     return out
     
 def process_precip(lonbnds,latbnds,outpath,precip_path, precip_out_suffix, mean_precip_out_suffix):
+    print "Processing Precipitation"
     precip_outpath = outpath + precip_out_suffix
     mean_precip_out = outpath + mean_precip_out_suffix
     getdata=get_precip_data(precip_outpath,precip_path,"_TRMM_3B43.7.nc")
     data_coord_range = data_for_coordinate_range(mean_precip_out,getdata[4],getdata[1],getdata[3],'nlat','nlon','precipitation',latbnds,lonbnds,getdata[2])
-    return data_coord_range
-'precipitation_mg.txt', 'precip_means_mg.csv'
-def process_precip_mg(lonbnds,latbnds,outpath,precip_path):
-    precip_outpath = outpath+'precipitation_mg.txt'
-    mean_precip_out = outpath + 'precip_means_mg.csv'
-    getdata=get_precip_data(precip_outpath,precip_path,"_TRMM_3B43.7.nc")
-    data_coord_range = data_for_coordinate_range(mean_precip_out,getdata[4],getdata[1],getdata[3],'nlat','nlon','precipitation',latbnds,lonbnds,getdata[2])
-
-    
     return data_coord_range

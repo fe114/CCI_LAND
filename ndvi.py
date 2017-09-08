@@ -141,6 +141,7 @@ def ndvi_data_for_coordinate_range(outpath,files,months,times,years,dataname,lat
     
 
 def process_ndvi(lonbnds,latbnds,outpath,ndvi_path,suffix, ndvi_files_suffix, ndvi_means_suffix):
+    print "Processing NDVI"
     ndvi_outpath = outpath + ndvi_files_suffix
     mean_ndvi_out = outpath + ndvi_means_suffix
     getdata = get_ndvi_data(ndvi_outpath,ndvi_path,suffix)
@@ -149,6 +150,7 @@ def process_ndvi(lonbnds,latbnds,outpath,ndvi_path,suffix, ndvi_files_suffix, nd
 
  
 def process_ndvi_mg(lonbnds,latbnds,outpath,ndvi_path,suffix):
+    print "Processing NDVI"
     ndvi_outpath = outpath + "NDVI_files_mg.json"
     mean_ndvi_out = outpath + "mean_ndvi_out_mg.csv"
     getdata = get_ndvi_data(ndvi_outpath,ndvi_path,suffix)

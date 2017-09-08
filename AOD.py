@@ -4,6 +4,14 @@
 Created on Mon Aug 14 14:49:38 2017
 
 @author: fespir
+# Name: Module to process aerosol data
+# Functions: get_aerosol_data, single_location, removing_nans, process_aerosol
+# Purpose: script recieves input from top level code (lat boundary, lon boundary, outpath and filenames) and outputs a dictionary of AOD data
+# Output: 
+'Anomalies', 'Monthly Retrievals','AOD Monthly Average', 'Times','AOD Measurements', 'dry times', 
+'rainy times','rainy anomalies', 'dry anomalies', 'nine year anoms wet','nine year anoms dry','Standardised Anomalies'
+
+
 """
 
 import json
@@ -19,7 +27,7 @@ import sys
 import csv
 
 
-
+#finds aserosol files and sorts files by the filepath name into date order
 def get_aerosol_data(file_outpath,path,suffix):
 
     try: 
@@ -55,6 +63,7 @@ def get_aerosol_data(file_outpath,path,suffix):
     
     return SORT,TIMES,MONTHS,YEARS,FILES
 
+#uses sorted filenames to extract aod data for lat lon region
 def single_location(f_out,FILES,lon,lat):
     
     try: 
@@ -82,6 +91,7 @@ def single_location(f_out,FILES,lon,lat):
     #~np.isnan finds index of all non nan values in AODs list
     nonan = np.where(~np.isnan(AODs))
     return nonan, AOD_VALUE
+#removes the 'nan' values within lat lon region and wites output to file
 
 def removing_nans(no_nans,AOD_VALUE,SORT,TIMES,MONTHS,YEARS,FILES,outpath):  
     #removing item from list if the corresponding AOD value is = nan
@@ -99,7 +109,6 @@ def removing_nans(no_nans,AOD_VALUE,SORT,TIMES,MONTHS,YEARS,FILES,outpath):
     
   
         
-    
     #converting A array to json format
     Anoms = array2json(A)
     
@@ -147,10 +156,13 @@ def removing_nans(no_nans,AOD_VALUE,SORT,TIMES,MONTHS,YEARS,FILES,outpath):
     anomalies = np.asarray(anomalies)
     monthly_retrievals = np.asarray(monthly_retrievals)
     
+    
+    
     out = {'Anomalies':anomalies, 'Monthly Retrievals':monthly_retrievals,'AOD Monthly Average':AOD_average, 'Times':T, 'AOD Measurements':A, 'dry times': seasonal_anoms['dry times'], 'rainy times': seasonal_anoms['rainy times'], 'rainy anomalies': seasonal_anoms['rainy anomalies'], 'dry anomalies': seasonal_anoms['dry anomalies'], 'nine year anoms wet': seasonal_anoms['nine year anomalies rain'],'nine year anoms dry': seasonal_anoms['nine year anomalies dry'], 'Standardised Anomalies': standardised_anoms}
     return out
 
 def process_aerosol(lon_bnds,lat_bnds,outpath,aerosol_path, aerfile_suffix,AOD_out_suffix, AOD_no_nan_suffix):
+    print "Processing Aerosol"
     aerfile = outpath+ aerfile_suffix
     AOD_out = outpath + AOD_out_suffix
     AOD_no_nan= outpath + AOD_no_nan_suffix
@@ -159,22 +171,3 @@ def process_aerosol(lon_bnds,lat_bnds,outpath,aerosol_path, aerfile_suffix,AOD_o
     Remove_nan = removing_nans(Aerosol_one_coordinate[0],Aerosol_one_coordinate[1],Aerosol_data[0],Aerosol_data[1],Aerosol_data[2],Aerosol_data[3],Aerosol_data[4],AOD_no_nan)
     return Remove_nan
 
-"""
-def process_aerosol_mg(lon_bnds,lat_bnds,outpath,aerosol_path):
-    aerfile = outpath+'aodfiles_mg.json'
-    AOD_out = outpath + 'aodlonlat_mg.csv'
-    AOD_no_nan= outpath + 'AOD_no_nan_mg.json'
-    Aerosol_data = get_aerosol_data(aerfile,aerosol_path,"04.01.nc")
-    Aerosol_one_coordinate = single_location(AOD_out,Aerosol_data[4],lon_bnds,lat_bnds)
-    Remove_nan = removing_nans(Aerosol_one_coordinate[0],Aerosol_one_coordinate[1],Aerosol_data[0],Aerosol_data[1],Aerosol_data[2],Aerosol_data[3],Aerosol_data[4],AOD_no_nan)
-    return Remove_nan
-
-def process_aerosol_control(lon_bnds,lat_bnds,outpath,aerosol_path):
-    aerfile = outpath+'aodfiles_control.json'
-    AOD_out = outpath + 'aodlonlat_control.csv'
-    AOD_no_nan= outpath + 'AOD_no_nan_control.json'
-    Aerosol_data = get_aerosol_data(aerfile,aerosol_path,"04.01.nc")
-    Aerosol_one_coordinate = single_location(AOD_out,Aerosol_data[4],lon_bnds,lat_bnds)
-    Remove_nan = removing_nans(Aerosol_one_coordinate[0],Aerosol_one_coordinate[1],Aerosol_data[0],Aerosol_data[1],Aerosol_data[2],Aerosol_data[3],Aerosol_data[4],AOD_no_nan)
-    return Remove_nan
-"""

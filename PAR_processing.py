@@ -4,6 +4,12 @@
 Created on Thu Aug 17 13:26:03 2017
 
 @author: fespir
+
+Name:PAR filename processor
+modules: PAR_file_info, get_PAR_attributes
+Purpose:  Program to extrat the filename from a PAR file and output the month, year, time and filename
+sub program used by PAR.py. 
+
 """
 
 def PAR_file_info(fname):

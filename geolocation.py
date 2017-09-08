@@ -1,3 +1,17 @@
+
+"""
+Created on Mon Aug 14 14:49:38 2017
+
+@author: fespir
+# Name: General moduel used by all data sets for processing lat lon location
+
+# Functions: get_data, array2json,  remove_nan,get_coordinate_grid_lat_lon, get_coordinate_grid_lon_lat, grid_average, monthly_average
+
+
+
+"""
+
+
 from numpy import * 
 from math import *
 import os,sys
@@ -17,6 +31,7 @@ import json
 import pandas as pd
 import pickle
 
+#reads a .nc file and uses the lat and lon location for a single point and outputs the data reading for that point
 def getdata(read,lat,lon,data,coord_lat,coord_lon):
     readfile = Dataset(read,mode='r')
     lons = readfile.variables[lon][:] 
@@ -27,12 +42,13 @@ def getdata(read,lat,lon,data,coord_lat,coord_lon):
     data_at_point = datavalues[coordinate_lat,coordinate_lon]
     data_at_point = float(data_at_point)
     return data_at_point
-
-
+#converts an array to json format for savefile
 def array2json(your_array):
     your_array = pd.Series(your_array).to_json(orient='values')
     return your_array
 
+#removes nan values from a list 
+#sorts through the equivalent y,x,months,files,years lists and removed the data for the nan index vales
 def remove_nan(list_unfiltered,times,months,years,filename):
     nonan = ~np.isnan(list_unfiltered)
     y =list_unfiltered[nonan]
@@ -41,7 +57,8 @@ def remove_nan(list_unfiltered,times,months,years,filename):
     YEARS = years[nonan]
     FILES = filename[nonan]
     return y,x,MONTHS,YEARS,FILES
-                            
+
+#reads .nc file and extracts data for a coordinate GRID. note: input as lon:lat                           
 def getdata_coordinategrid_lon_lat(read,lon,lat,lon_boundary,lat_boundary,variable):
         readfile = Dataset(read,mode='r')
         #print readfile.variables.keys()
@@ -56,7 +73,7 @@ def getdata_coordinategrid_lon_lat(read,lon,lat,lon_boundary,lat_boundary,variab
         lon_max = lon_inds[len(lon_inds)-1]
         precip = readfile.variables[variable][lon_zero:lon_max,lat_zero:lat_max]
         return precip
- 
+#reads .nc file and extracts data for a coordinate GRID. note: input as lat:lon  
 def getdata_coordinategrid_lat_lon(read,lon,lat,lon_boundary,lat_boundary,variable):
         readfile = Dataset(read,mode='r')
         #print readfile.variables.keys()
@@ -71,7 +88,9 @@ def getdata_coordinategrid_lat_lon(read,lon,lat,lon_boundary,lat_boundary,variab
         lon_max = lon_inds[len(lon_inds)-1]
         precip = readfile.variables[variable][lat_zero:lat_max,lon_zero:lon_max]
         return precip   
-    
+
+#calculates the mean value for a coodinate grid  
+# input = data from .nc file  
 def grid_average(precip):
         sum_list = []
         ncols = len(precip[0])
@@ -83,7 +102,8 @@ def grid_average(precip):
         mean_precip = sum_precip/N_values # mean NDVI value for the coordinate range
         #all_precip_means.append(mean_precip)
         return mean_precip
-    
+  
+#calculates the monthly average  
 def monthly_average(months,data):
     count = 1
     month_list = linspace(1,12,12)

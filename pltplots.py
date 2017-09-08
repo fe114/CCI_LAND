@@ -4,6 +4,31 @@
 Created on Thu Aug 24 16:24:23 2017
 
 @author: fespir
+
+NAME;
+Program to produce plots and statistics 
+
+PURPOSE;
+statistics and list processing:
+1. Moving average (movingaverage)
+2. Line of best fit (LOBF) --> used for a gridplot e.g. 3x2
+3. Best Fit Line (bestfitline) very similar to 2. but used for one single plot
+4. t statistic (tstat)
+5. Converts two different length arrays into two equal length arrays (xtime_equals_ytime)
+6. list to array converter (toarray)
+
+
+Plots:
+1. 3x1 plot, x axis is shared by the three plots (triplotsharex)
+2. 3x2 grid plot, one column of three plots shares one x axis (gridplot). Moving average funtion is applied to each plot. 
+3. scatter plot using two lists (scatter)
+4. scatter plot with line of best fit (lineofbestfit). T statsic is ploted in legend
+5. scatter plot which is not saved to a file  
+
+
+AUTHOR;
+Freya Espir
+
 """
 
 from numpy import * 
@@ -22,13 +47,13 @@ import plotly.graph_objs as go
 from scipy.stats import linregress
 
 #-----------------------------------
-# monthly anomalies, shared axis 
+
 
 def movingaverage(interval, window_size):
     window = np.ones(int(window_size))/float(window_size)
     return np.convolve(interval, window, 'same')
 
-def LOBF(x,y, axes1,axes2,ax):
+def LOBF(x,y,axes1,axes2,ax):
     matrix = np.vstack([x, np.ones(len(x))]).T
     m, c = np.linalg.lstsq(matrix, y)[0]
     #finding intercept at the time of the first AOD reading
@@ -162,19 +187,6 @@ def gridplot(x1,x2,x3,x4,x5,x6,y1,y2,y3,y4,y5,y6,path,figname,figtitle):
     plt.show()
     f.savefig(path + figname,bbox_inches='tight')
     
-def scatter_reshape_axis(Time, Data,xticks, ylab, xlab, figtitle, figname):
-    #plot AOD readings for each month
-    fig = plt.figure(figsize=(16,4))
-    ax = fig.add_subplot(111)
-    plt.plot(Time, Data, 'o-')
-    plt.title(figtitle, fontsize = 14)
-    plt.yticks(fontsize = 14)
-    plt.xticks(xticks,fontsize = 14)
-    plt.ylabel(ylab, fontsize = 14)
-    plt.xlabel(xlab, fontsize = 14)
-    figshow = plt.show()
-    plt.savefig( figpath + figname)
-    return figshow
 
 
 def scatter(tick_spacing,xticks, retrievals, ylab, xlab, figtitle, figname, path, plotcolour):
@@ -189,34 +201,6 @@ def scatter(tick_spacing,xticks, retrievals, ylab, xlab, figtitle, figname, path
     plot = plt.show()
     fig.savefig(path+figname,bbox_inches='tight')
     return plot
-
-
-
-def scatter_LOBF(Time, Data, xticks, ylab, xlab, scatterlabel, figtitle, figname):
-#plotting AOD anomalies
-    fig = plt.figure(figsize=(16,4))
-    ax = fig.add_subplot(111)
-    plt.title(figtitle, fontsize = 12)
-    plt.xlabel(xlab,fontsize = 12 )
-    plt.ylabel(ylab, fontsize = 12)
-    plt.yticks(fontsize = 10)
-    plt.xticks(xticks,fontsize = 10)
-    plot = plt.plot(Time, Data, 'o', label=scatterlabel, markersize=5) 
-    matrix = np.vstack([Time, np.ones(len(Time))]).T
-    m, c = np.linalg.lstsq(matrix, Data)[0]
-
-    #finding intercept at the time of the first AOD reading
-    y_x0= m*Time[0] + c
-
-    #.5f =  5 significant figures
-    bestfittxt =  '{:.5f}x + {:.10f}'.format(m, y_x0)
-    #plotting line of best fit 
-    bestfit = plt.plot(Time, m*Time + c, 'r', label='Fitted line ' + bestfittxt)
-    #calculating the mean, variance, T statistic and p value
-    plt.legend()
-    plt.show()
-    plt.savefig( figpath + figname,bbox_inches='tight')
-    return plot, bestfit 
 
 
 def toarray(mylist):

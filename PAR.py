@@ -4,6 +4,15 @@
 Created on Thu Aug 17 13:14:04 2017
 
 @author: fespir
+
+# Name: Module to process PAR data
+# Functions: get_PAR_files, read_PAR_files, process_PAR
+# Purpose: script recieves input from top level code (lat boundary, lon boundary, outpath and filenames) and outputs a dictionary of PAR data
+# Output: 
+'Anomalies', 'Monthly Retrievals','PAR Monthly Average', 'Times','PARs', 'dry times', 
+'rainy times','rainy anomalies', 'dry anomalies', 'nine year anoms wet','nine year anoms dry','Standardised Anomalies', 'Daily Solar Radiation'
+
+
 """
 import json
 from numpy import * 
@@ -83,6 +92,8 @@ def read_PAR_files(outpath,files,months,times,years,latname,lonname,variable,lat
     PARs = np.asarray(PARs)
     latitude = ((latval[0] + latval[1])/2.0)
     
+    
+    #corrects for the daily solar radiation fluctiations 
     solar_rad_daily = []
     for i in range(len(times)):
         caldat = ((times[i] %1.0)* 365)
@@ -119,31 +130,9 @@ def read_PAR_files(outpath,files,months,times,years,latname,lonname,variable,lat
     return out
 
 def process_PAR(outpath,PAR_path,lat,lon,variable,suffix,PAR_file_info_suffix, PAR_data_suffix):
+    print "Processing PAR"
     PAR_info_out = outpath + PAR_file_info_suffix
     PAR_outpath = outpath + PAR_data_suffix
     getfile = get_PAR_files(PAR_outpath,PAR_path,suffix)
     data = read_PAR_files(PAR_info_out,getfile[1],getfile[3],getfile[0],getfile[2],'lat', 'lon', variable,lat,lon)
     return data
-  
-"""
-def process_PAR_total(outpath,PAR_path,lat,lon,variable,suffix):
-    PAR_info_out = outpath + "PAR_total_vals.csv"
-    PAR_outpath = outpath + "par_total_attributes.json"
-    getfile = get_PAR_files(PAR_outpath,PAR_path,suffix)
-    data = read_PAR_files(PAR_info_out,getfile[1],getfile[3],getfile[0],getfile[2],'lat', 'lon', variable,lat,lon)
-    return data
-
-def process_PAR_total_mg(outpath,PAR_path,lat,lon,variable,suffix):
-    PAR_info_out = outpath + "PAR_total_vals.csv"
-    PAR_outpath = outpath + "par_total_attributes.json"
-    getfile = get_PAR_files(PAR_outpath,PAR_path,suffix)
-    data = read_PAR_files(PAR_info_out,getfile[1],getfile[3],getfile[0],getfile[2],'lat', 'lon', variable,lat,lon)
-    return data
-
-def process_PAR_diffuse_mg(outpath,PAR_path,lat,lon,variable,suffix):
-    PAR_info_out = outpath + "PAR_diffuse_mg_vals.csv"
-    PAR_outpath = outpath + "par_diffuse_mg_attributes.json"
-    getfile = get_PAR_files(PAR_outpath,PAR_path,suffix)
-    data = read_PAR_files(PAR_info_out,getfile[1],getfile[3],getfile[0],getfile[2],'lat', 'lon', variable,lat,lon)
-    return data
-"""

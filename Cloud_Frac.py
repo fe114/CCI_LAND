@@ -4,7 +4,18 @@
 Created on Fri Aug 18 09:26:49 2017
 
 @author: fespir
+
+
+# Name: Module to process cloud fraction data
+# Functions: get_cloud_frac_files, read_cloud_frac_files, process cloud frac
+# Purpose: script recieves input from top level code (lat boundary, lon boundary, outpath and filenames) and outputs a dictionary of cloud frac data
+# Output: 
+'Anomalies', 'Monthly Retrievals','cloud_frac Monthly Average', 'Times','cloud_fracs', 'dry times', 
+'rainy times','rainy anomalies', 'dry anomalies', 'nine year anoms wet','nine year anoms dry','Standardised Anomalies'
+
+
 """
+
 
 #cloud fraction 
 
@@ -59,7 +70,7 @@ def get_cloud_frac_files(outpath,path,suffix):
     return TIMES,FILES,YEARS,MONTHS
 
 
-#toa_swdn_allsky(lat,lon)
+
 def read_cloud_frac_files(outpath,times,files,years,months,latname,lonname,variable,latval,lonval):
     cloud_frac_means = []   
  
@@ -108,16 +119,9 @@ def read_cloud_frac_files(outpath,times,files,years,months,latname,lonname,varia
     return out
 
 def process_cloud_frac(lat,lon,outpath,cloud_frac_path,suffix,Cloud_frac_fileinfo_suffix,Cloud_frac_data_suffix):
+    print "Processing Cloud Fraction"
     cloud_frac_info_out = outpath + Cloud_frac_fileinfo_suffix
     cloud_frac_outpath = outpath + Cloud_frac_data_suffix
     getfile = get_cloud_frac_files(cloud_frac_outpath,cloud_frac_path,suffix)
     data = read_cloud_frac_files(cloud_frac_info_out,getfile[0],getfile[1],getfile[2],getfile[3],'lat', 'lon', 'cldfr_allsky',lat,lon)
     return data
-"""
-def process_cloud_frac_mg(outpath,cloud_frac_path,lat,lon,suffix):
-    cloud_frac_info_out = outpath + "CCI_vals_mg.csv"
-    CCI_outpath = outpath + "CCI_attributes_mg.json"
-    getfile = get_CCI_files(CCI_outpath,CCI_path,suffix)
-    data = read_CCI_files(CCI_info_out,getfile[0],getfile[1],getfile[2],getfile[3], 'lat', 'lon', 'cldfr_allsky',lat,lon)
-    return data   
-"""

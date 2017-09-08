@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 '''
 NAME;
-Top level program to process data using sub processing scripts for a coordinate grid using lat and lon boundaries
+Top level programme to process data using sub processing scripts for a cordinate grid using lat and lon boundaries
 
 
 
@@ -23,17 +23,8 @@ Freya Espir
 
 '''
 
-from numpy import * 
-import math
-from math import *
-from netCDF4 import Dataset
+
 import os,sys
-import numpy as np
-import cartopy.crs as ccrs
-import cartopy.feature as cf
-import matplotlib.pyplot as plt 
-from scipy import stats 
-from atsr import *
 from file_search import *
 from geolocation import *
 from AOD import *
@@ -44,11 +35,8 @@ from Cloud_Frac import *
 from pltplots import *
 import csv
 import pickle
-from matplotlib import gridspec
-from plotly import tools
-import plotly.plotly as py
-import plotly.graph_objs as go
-from scipy.stats import linregress
+import fnmatch
+
 
 figpath = '/group_workspaces/cems2/nceo_generic/CCI_LAND/figs/rondonia/'
 aerosol_path = "/group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v04-01/L3_MONTHLY/"
@@ -76,12 +64,22 @@ lon2 = lon_bnds.append(int(raw_input('lon upper boundary ')))
 lat = str(sum(lat_bnds)/len(lat_bnds))
 lon = str(sum(lon_bnds)/len(lon_bnds))
 
-#processing data for Rondonia where rapid deforestation has occured since ~ 1990 
 
+deletefile = raw_input("Delete previously saved files from outpath? Type y or n ")
+
+if deletefile == 'y':
+    for root, dirs, files in os.walk(outpath):
+        for filename in files:
+            if filename.endswith(('.csv', '.json', '.txt')):
+                os.remove(outpath + filename)
+
+
+    
 def dicttofile(filename,data):
     with open(filename, 'wb') as handle:
         pickle.dump(data, handle)
-        
+ 
+       
 Aerosol_data = process_aerosol(lon_bnds,lat_bnds,outpath,aerosol_path,lat + lon +'aodfiles.json',lat + lon +'aodlonlat.csv',lat + lon +'AOD_no_nan.json')
 dicttofile(outpath+lat+lon+'aod.txt',Aerosol_data)
 
