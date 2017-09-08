@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 '''
 NAME;
-Top level programme to process data using sub processing scripts for a cordinate grid using lat and lon boundaries
+Top level program to process data using sub processing scripts for a coordinate grid using lat and lon boundaries
 
 
 
